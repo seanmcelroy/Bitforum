@@ -13,6 +13,8 @@ namespace Bitforum.Console
     using System.Collections.Generic;
     using System.Diagnostics;
 
+    using Core;
+
     /// <summary>
     /// Entry point for console test harness
     /// </summary>
@@ -26,26 +28,29 @@ namespace Bitforum.Console
             Console.WriteLine("Generating genesis block...");
             var genesisBlock = new Block
                                    {
-                                       BlockNumber = 0,
                                        Posts = new[] 
                                        {
                                            new Post
                                            {
-                                                Forum = "alt.privacy",
-                                                MessageId = Guid.NewGuid().ToString("N"),
-                                                ConversationId = Guid.NewGuid().ToString("N"),
-                                                From = "Sean McElroy <me@seanmcelroy.com;0>",
-                                                DateEpoch = Convert.ToInt64((new DateTime(1981, 01, 26, 0, 0, 0, DateTimeKind.Local) - new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds),
-                                                Subject = "First post",
-                                                Body = "Ex nihilo nihil fit"
+                                               Header = new PostHeader
+                                               {
+                                                    Forum = "alt.privacy",
+                                                    MessageId = Guid.NewGuid().ToString("N"),
+                                                    ConversationId = Guid.NewGuid().ToString("N"),
+                                                    From = "Sean McElroy <me@seanmcelroy.com;0>",
+                                                    DateEpoch = Convert.ToUInt32((new DateTime(1981, 01, 26, 0, 0, 0, DateTimeKind.Local) - new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds),
+                                                    Subject = "First post",
+                                                    BodyContentType = "text/plain"
+                                                },
+                                                Body = System.Text.Encoding.UTF8.GetBytes("Ex nihilo nihil fit")
                                            }
                                        }
                                    };
 
             Console.WriteLine("Generating genesis block hash...");
             genesisBlock.GenerateGenesisHash();
-            Debug.Assert(genesisBlock.BlockHash != null, "genesisBlock.BlockHash != null");
-            Console.WriteLine($"Genesis hash: {BitConverter.ToString(genesisBlock.BlockHash).Replace("-", "")}");
+            Debug.Assert(genesisBlock.Header != null, "genesisBlock.Header != null");
+            Console.WriteLine($"Genesis hash: {BitConverter.ToString(genesisBlock.Header.GetHash()).Replace("-", "")}");
 
             Console.WriteLine("Generating exodus block...");
             Debug.Assert(genesisBlock.Posts != null, "genesisBlock.Posts != null");
@@ -57,18 +62,28 @@ namespace Bitforum.Console
                 {
                     new Post
                         {
-                            Forum = "alt.privacy",
-                            MessageId = Guid.NewGuid().ToString("N"),
-                            ConversationId = genesisBlock.Posts[0].ConversationId,
-                            From = "Sean McElroy <me@seanmcelroy.com;0>",
-                            DateEpoch = Convert.ToInt64((DateTime.UtcNow - new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds),
-                            Subject = "First post",
-                            Body = "Ex nihilo nihil fit"
+                            Header = new PostHeader
+                            {
+                                Forum = "alt.privacy",
+                                MessageId = Guid.NewGuid().ToString("N"),
+                                ConversationId = genesisBlock.Posts[0].Header.ConversationId,
+                                From = "Sean McElroy <me@seanmcelroy.com;0>",
+                                DateEpoch = Convert.ToUInt32((DateTime.UtcNow - new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds),
+                                Subject = "RE: First post",
+                                BodyContentType = "text/plain"
+                            },
+                            Body = System.Text.Encoding.UTF8.GetBytes("We can easily forgive a child who is afraid of the dark; the real tragedy of life is when men are afraid of the light.")
                         }
                 });
 
-            Debug.Assert(exodusBlock.BlockHash != null, "exodusBlock.BlockHash != null");
-            Console.WriteLine($"Exodus hash: {BitConverter.ToString(exodusBlock.BlockHash).Replace("-", "")}");
+            Debug.Assert(exodusBlock.Header != null, "exodusBlock.Header != null");
+            Console.WriteLine($"Exodus hash: {BitConverter.ToString(exodusBlock.Header.GetHash()).Replace("-", "")}");
+
+            Console.Write("Verifying exodus hash... ");
+            Console.WriteLine($"{exodusBlock.Verify().ToString().ToUpperInvariant()}");
+
+            genesisBlock.SaveToFile();
+            exodusBlock.SaveToFile();
 
             // Mine a reply.
             Console.ReadLine();
