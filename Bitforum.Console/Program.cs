@@ -45,6 +45,7 @@ namespace Bitforum.Console
                     var spinner = new ConsoleSpiner();
                     foreach (var blockFile in Directory.GetFiles(Block.GetBlockDirectory()))
                     {
+                        Debug.Assert(blockFile != null, "blockFile != null");
                         var header = BlockHeader.ReadFromFile(blockFile);
                         index.Add(new BlockIndexEntry(blockFile, header));
                         spinner.Turn();
@@ -66,6 +67,11 @@ namespace Bitforum.Console
                         {
                             Console.WriteLine("BREAK IN CHAIN");
                         }
+
+                        if (genesisFound && continuous)
+                        {
+                            Console.WriteLine();
+                        }
                     }
                     else
                     {
@@ -73,7 +79,7 @@ namespace Bitforum.Console
                         genesisFoundLocal = genesisFound;
                     }
 
-                    Console.Write("\r\n\tSaving... ");
+                    Console.Write("\tSaving... ");
                     index.SaveToFile();
                     Console.WriteLine("DONE");
                 }
@@ -89,32 +95,39 @@ namespace Bitforum.Console
                     var indexString = sr.ReadToEnd();
                     index = JsonConvert.DeserializeObject<BlockIndex>(indexString);
                     sr.Close();
-                    Console.WriteLine("DONE");
                 }
 
-                index.Sort(new BlockIndexEntryComparer());
-
-                // Walk the list to ensure no holes.
-                Console.Write("\tVerifying... ");
-                bool genesisFound, continuous;
-                if (!index.Verify(out genesisFound, out continuous))
+                if (index != null)
                 {
-                    if (!genesisFound)
-                    {
-                        Console.WriteLine("GENESIS BLOCK NOT FOUND");
-                    }
+                    Console.WriteLine("DONE");
+                    index.Sort(new BlockIndexEntryComparer());
 
-                    if (!continuous)
+                    // Walk the list to ensure no holes.
+                    Console.Write("\tVerifying... ");
+                    bool genesisFound, continuous;
+                    if (!index.Verify(out genesisFound, out continuous))
                     {
-                        Console.WriteLine("BREAK IN CHAIN");
+                        if (!genesisFound)
+                        {
+                            Console.WriteLine("GENESIS BLOCK NOT FOUND");
+                        }
+
+                        if (!continuous)
+                        {
+                            Console.WriteLine("BREAK IN CHAIN");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("DONE");
+                        genesisFoundLocal = genesisFound;
                     }
                 }
                 else
                 {
-                    Console.WriteLine("DONE");
-                    genesisFoundLocal = genesisFound;
+                    // TODO: Could not open index
+                    Console.WriteLine("FAILED");
                 }
-
             }
 
             if (!genesisFoundLocal)

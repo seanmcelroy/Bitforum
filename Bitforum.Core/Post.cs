@@ -39,6 +39,11 @@ namespace Bitforum.Core
         [NotNull, Pure]
         public byte[] ToByteArray()
         {
+            if (this.Header == null)
+            {
+                throw new InvalidOperationException("Post header is null!");
+            }
+
             using (var ms = new MemoryStream())
             using (var bw = new BinaryWriter(ms))
             {

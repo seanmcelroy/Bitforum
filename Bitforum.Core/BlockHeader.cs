@@ -11,6 +11,7 @@ namespace Bitforum.Core
 {
     using System;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Security.Cryptography;
 
@@ -41,6 +42,7 @@ namespace Bitforum.Core
         /// <summary>
         /// Gets or sets the hash of the Merkle root of the messages in this block
         /// </summary>
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
         [CanBeNull]
         public byte[] MerkleRootHash { get; set; }
 
@@ -94,6 +96,11 @@ namespace Bitforum.Core
         [NotNull, Pure]
         public byte[] ToByteArray()
         {
+            if (this.MerkleRootHash == null)
+            {
+                throw new InvalidOperationException("Merkle root hash is null!");
+            }
+
             using (var ms = new MemoryStream())
             using (var bw = new BinaryWriter(ms))
             {
@@ -111,6 +118,10 @@ namespace Bitforum.Core
             }
         }
 
+        /// <summary>
+        /// Hydrates the block header from a byte array
+        /// </summary>
+        /// <param name="bytes">The byte array, ordered in the same manner as <see cref="ToByteArray"/></param>
         public void FromByteArray([NotNull] byte[] bytes)
         {
             using (var ms = new MemoryStream(bytes))

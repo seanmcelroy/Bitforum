@@ -12,6 +12,7 @@ namespace Bitforum.Core
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Security.Cryptography;
 
@@ -33,6 +34,9 @@ namespace Bitforum.Core
         /// </summary>
         public BlockHeader Header { get; set; } = new BlockHeader();
 
+        /// <summary>
+        /// Gets or sets the posts in the block
+        /// </summary>
         public Post[] Posts { get; set; }
 
         /// <summary>
@@ -45,6 +49,12 @@ namespace Bitforum.Core
             return Path.Combine(Directory.GetCurrentDirectory(), "Data" + Path.DirectorySeparatorChar + "Blocks");
         }
 
+        /// <summary>
+        /// Computes a hash for this block for the given pre-calculated header and a given nonce value
+        /// </summary>
+        /// <param name="nonce">The value to which to apply to the last eight bytes of the <paramref name="preNonceArray"/> before calculating the hash</param>
+        /// <param name="preNonceArray">The output from <see cref="BlockHeader.ToByteArray"/> for the header of this block</param>
+        /// <returns>The hash for given pre-calculated header and a given nonce value</returns>
         [NotNull, Pure]
         public static byte[] HashForNonce(long nonce, [NotNull] byte[] preNonceArray)
         {
@@ -55,6 +65,11 @@ namespace Bitforum.Core
         [NotNull, Pure]
         public static Block MineBlock([NotNull] Block tail, [NotNull] List<Post> unconfirmedPosts)
         {
+            if (tail.Header == null)
+            {
+                throw new InvalidOperationException("Tail block header is null!");
+            }
+
             var newBlock = new Block
             {
                 Header = new BlockHeader
@@ -72,8 +87,16 @@ namespace Bitforum.Core
             return newBlock;
         }
 
+        /// <summary>
+        /// Mines a <see cref="BlockHeader.Nonce"/> value that can cause this block to serve as the genesis block
+        /// </summary>
         public void GenerateGenesisHash()
         {
+            if (this.Header == null)
+            {
+                throw new InvalidOperationException("Block header is null!");
+            }
+
             var minedHashNonce = this.HashForZeroCount(3);
             this.Header.Nonce = minedHashNonce;
         }
@@ -166,6 +189,7 @@ namespace Bitforum.Core
         /// </summary>
         /// <returns>The Merkle root hash of the unconfirmed posts</returns>
         [NotNull, Pure]
+        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "Reviewed. Suppression is OK here.")]
         private byte[] GenerateMerkleRoot()
         {
             var leafHashes = new List<byte[]>();

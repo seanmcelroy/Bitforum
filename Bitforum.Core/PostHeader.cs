@@ -25,12 +25,15 @@ namespace Bitforum.Core
         /// <summary>
         /// Gets or sets the name of the newsgroup for the message
         /// </summary>
+        [NotNull]
+        // ReSharper disable once NotNullMemberIsNotInitialized
         public string Forum { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier for the message
         /// </summary>
         [NotNull]
+        // ReSharper disable once NotNullMemberIsNotInitialized
         public string MessageId { get; set; }
 
         /// <summary>
@@ -43,6 +46,7 @@ namespace Bitforum.Core
         /// Gets or sets the identifying text about the sender.  This may or may not be a standard e-mail address; it could also be a certificate.
         /// </summary>
         [NotNull]
+        // ReSharper disable once NotNullMemberIsNotInitialized
         public string From { get; set; }
 
         /// <summary>
@@ -60,6 +64,7 @@ namespace Bitforum.Core
         /// Gets or sets the content type of the body
         /// </summary>
         [NotNull]
+        // ReSharper disable once NotNullMemberIsNotInitialized
         public string BodyContentType { get; set; }
 
         /// <summary>

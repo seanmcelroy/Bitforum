@@ -1,21 +1,39 @@
-﻿namespace Bitforum.Console
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ConsoleSpiner.cs" company="Sean McElroy">
+//   Copyright Sean McElroy 2016.  Released under the terms of the MIT License
+// </copyright>
+// <summary>
+//   A utility class for displaying an animated processing cursor
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace Bitforum.Console
 {
+    /// <summary>
+    /// A utility class for displaying an animated processing cursor
+    /// </summary>
     public class ConsoleSpiner
     {
-        int counter;
+        /// <summary>
+        /// A counter for which cursor animation to show
+        /// </summary>
+        private int _counter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsoleSpiner"/> class.
         /// </summary>
         public ConsoleSpiner()
         {
-            this.counter = 0;
+            this._counter = 0;
         }
 
+        /// <summary>
+        /// Causes the cursor to spin one tick
+        /// </summary>
         public void Turn()
         {
-            this.counter++;
-            switch (this.counter % 4)
+            this._counter++;
+            switch (this._counter % 4)
             {
                 case 0:
                     System.Console.Write("/");
