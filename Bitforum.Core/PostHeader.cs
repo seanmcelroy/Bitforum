@@ -30,16 +30,19 @@ namespace Bitforum.Core
         /// <summary>
         /// Gets or sets the unique identifier for the message
         /// </summary>
+        [NotNull]
         public string MessageId { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier for the conversation.  Replies to a thread will have the same conversation identifier.
         /// </summary>
+        [CanBeNull]
         public string ConversationId { get; set; }
 
         /// <summary>
         /// Gets or sets the identifying text about the sender.  This may or may not be a standard e-mail address; it could also be a certificate.
         /// </summary>
+        [NotNull]
         public string From { get; set; }
 
         /// <summary>
@@ -50,11 +53,13 @@ namespace Bitforum.Core
         /// <summary>
         /// Gets or sets the subject line of the message
         /// </summary>
+        [CanBeNull]
         public string Subject { get; set; }
 
         /// <summary>
         /// Gets or sets the content type of the body
         /// </summary>
+        [NotNull]
         public string BodyContentType { get; set; }
 
         /// <summary>

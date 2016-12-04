@@ -58,6 +58,34 @@ namespace Bitforum.Core
         /// Gets or sets the nonce applied to the hash that allows it to meet the required difficulty target
         /// </summary>
         public uint Nonce { get; set; }
+
+        /// <summary>
+        /// Reads a block header from a file
+        /// </summary>
+        /// <param name="path">The path to the block file to read</param>
+        /// <returns>The block header read from the block file</returns>
+        [NotNull, Pure]
+        public static BlockHeader ReadFromFile([NotNull] string path)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            if (!File.Exists(path))
+            {
+                throw new FileNotFoundException("Block file not found", path);
+            }
+
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var br = new BinaryReader(fs))
+            {
+                var bytes = br.ReadBytes(2 + 64 + 64 + 4 + 2 + 4);
+                var header = new BlockHeader();
+                header.FromByteArray(bytes);
+                return header;
+            }
+        }
         
         /// <summary>
         /// Gets the serialized byte representation of a post

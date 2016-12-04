@@ -34,7 +34,17 @@ namespace Bitforum.Core
         public BlockHeader Header { get; set; } = new BlockHeader();
 
         public Post[] Posts { get; set; }
-        
+
+        /// <summary>
+        /// Gets the default directory for storing blocks for the block chain on local storage
+        /// </summary>
+        /// <returns>The path to the directory in which blocks are stored</returns>
+        [NotNull, Pure]
+        public static string GetBlockDirectory()
+        {
+            return Path.Combine(Directory.GetCurrentDirectory(), "Data" + Path.DirectorySeparatorChar + "Blocks");
+        }
+
         [NotNull, Pure]
         public static byte[] HashForNonce(long nonce, [NotNull] byte[] preNonceArray)
         {
@@ -56,6 +66,7 @@ namespace Bitforum.Core
             };
 
             var minedHashNonce = newBlock.HashForZeroCount(3);
+            Debug.Assert(newBlock.Header != null, "newBlock.Header != null");
             newBlock.Header.Nonce = minedHashNonce;
 
             return newBlock;
@@ -67,9 +78,19 @@ namespace Bitforum.Core
             this.Header.Nonce = minedHashNonce;
         }
 
+        /// <summary>
+        /// Saves the block to local storage
+        /// </summary>
+        /// <param name="directory">The directory path to which to save the block file</param>
+        /// <param name="filename">The filename of the block file</param>
         public void SaveToFile(string directory = null, string filename = null)
         {
-            var dir = directory ?? Path.Combine(Directory.GetCurrentDirectory(), "Data" + Path.DirectorySeparatorChar + "Blocks");
+            if (this.Header == null)
+            {
+                throw new InvalidOperationException("Block header is null!");
+            }
+
+            var dir = directory ?? GetBlockDirectory();
 
             if (!Directory.Exists(dir))
             {
@@ -77,7 +98,7 @@ namespace Bitforum.Core
             }
 
             using (var fs = new FileStream(
-                Path.Combine(dir, filename ?? BitConverter.ToString(this.Header.MerkleRootHash).Replace("-", string.Empty)) + ".block",
+                Path.Combine(dir, filename ?? BitConverter.ToString(this.Header.GetHash()).Replace("-", string.Empty)) + ".block",
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.None))
