@@ -14,6 +14,7 @@ namespace Bitforum.Core
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using System.Linq;
     using System.Security.Cryptography;
 
     using JetBrains.Annotations;
@@ -44,9 +45,21 @@ namespace Bitforum.Core
         /// </summary>
         /// <returns>The path to the directory in which blocks are stored</returns>
         [NotNull, Pure]
-        public static string GetBlockDirectory()
+        public static string GetBlockDirectory(string suffix = null)
         {
-            return Path.Combine(Directory.GetCurrentDirectory(), "Data" + Path.DirectorySeparatorChar + "Blocks");
+            return Path.Combine(Directory.GetCurrentDirectory(), $"Data{suffix}{Path.DirectorySeparatorChar}Blocks");
+        }
+
+        /// <summary>
+        /// Gets the hash of the latest block in the index
+        /// </summary>
+        /// <param name="directory">The directory path to which to retrieve the block index</param>
+        /// <returns>The hash of the latest block in the index</returns>
+        [Pure, CanBeNull]
+        public static string GetLatestBlockHash([NotNull] string directory)
+        {
+            var blockIndex = BlockIndex.LoadFromFile(directory);
+            return blockIndex?.Last()?.Hash;
         }
 
         /// <summary>
@@ -106,22 +119,20 @@ namespace Bitforum.Core
         /// </summary>
         /// <param name="directory">The directory path to which to save the block file</param>
         /// <param name="filename">The filename of the block file</param>
-        public void SaveToFile(string directory = null, string filename = null)
+        public void SaveToFile([NotNull] string directory, string filename = null)
         {
             if (this.Header == null)
             {
                 throw new InvalidOperationException("Block header is null!");
             }
-
-            var dir = directory ?? GetBlockDirectory();
-
-            if (!Directory.Exists(dir))
+            
+            if (!Directory.Exists(directory))
             {
-                Directory.CreateDirectory(dir);
+                Directory.CreateDirectory(directory);
             }
 
             using (var fs = new FileStream(
-                Path.Combine(dir, filename ?? BitConverter.ToString(this.Header.GetHash()).Replace("-", string.Empty)) + ".block",
+                Path.Combine(directory, filename ?? BitConverter.ToString(this.Header.GetHash()).Replace("-", string.Empty)) + ".block",
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.None))
@@ -244,52 +255,10 @@ namespace Bitforum.Core
         [Pure]
         private uint HashForZeroCount(int zeroCount)
         {
-            Console.WriteLine();
-            var best = 0;
-            
             this.Header.MerkleRootHash = this.GenerateMerkleRoot();
             var preNonceArray = this.Header.ToByteArray();
-            
-            for (var l = 0U; l < uint.MaxValue; l++)
-            {
-                var candidateHash = HashForNonce(l, preNonceArray);
-                var success = false;
-                var candidateHashString = BitConverter.ToString(candidateHash).Replace("-", string.Empty);
 
-                var i = 0;
-                foreach (var c in candidateHashString)
-                {
-                    if (c == '0')
-                    {
-                        i++;
-                        if (i == zeroCount)
-                        {
-                            success = true;
-                            best = Math.Max(best, i);
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        best = Math.Max(best, i);
-                        break;
-                    }
-                }
-
-                if (l % 10000 == 0)
-                {
-                    Console.Write($"\rBest: {best} of {zeroCount} (#{l:N0})");
-                }
-
-                if (success)
-                {
-                    Console.Write($"\rBest: {best} of {zeroCount} (#{l:N0})");
-                    Console.WriteLine($"FOUND: #{l:N0}: {candidateHashString}");
-                    return l;
-                }
-            }
-
-            throw new InvalidOperationException($"Unable to find any hash that returns {zeroCount} zeros");
+            return HashUtility.HashForZeroCount(preNonceArray, zeroCount);
         }
     }
 }

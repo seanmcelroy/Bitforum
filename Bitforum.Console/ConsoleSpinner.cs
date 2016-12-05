@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ConsoleSpiner.cs" company="Sean McElroy">
+// <copyright file="ConsoleSpinner.cs" company="Sean McElroy">
 //   Copyright Sean McElroy 2016.  Released under the terms of the MIT License
 // </copyright>
 // <summary>
@@ -12,7 +12,7 @@ namespace Bitforum.Console
     /// <summary>
     /// A utility class for displaying an animated processing cursor
     /// </summary>
-    public class ConsoleSpiner
+    public class ConsoleSpinner
     {
         /// <summary>
         /// A counter for which cursor animation to show
@@ -20,9 +20,9 @@ namespace Bitforum.Console
         private int _counter;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConsoleSpiner"/> class.
+        /// Initializes a new instance of the <see cref="ConsoleSpinner"/> class.
         /// </summary>
-        public ConsoleSpiner()
+        public ConsoleSpinner()
         {
             this._counter = 0;
         }

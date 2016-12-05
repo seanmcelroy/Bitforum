@@ -37,6 +37,10 @@
       <HintPath>..\packages\JetBrains.Annotations.10.2.1\lib\net\JetBrains.Annotations.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -44,9 +48,10 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConsoleSpiner.cs" />
+    <Compile Include="ConsoleSpinner.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -58,6 +63,10 @@
     <ProjectReference Include="..\Bitforum.Core\Bitforum.Core.csproj">
       <Project>{96cb0706-be7a-4d94-878d-6fa1093002fe}</Project>
       <Name>Bitforum.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bitforum.Server\Bitforum.Server.csproj">
+      <Project>{86de482c-d3e3-4d1e-92d5-1d3ba0eba09b}</Project>
+      <Name>Bitforum.Server</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

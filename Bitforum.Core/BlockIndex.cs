@@ -15,6 +15,8 @@ namespace Bitforum.Core
 
     using JetBrains.Annotations;
 
+    using log4net;
+
     using Newtonsoft.Json;
 
     /// <summary>
@@ -23,21 +25,46 @@ namespace Bitforum.Core
     public class BlockIndex : List<BlockIndexEntry>
     {
         /// <summary>
+        /// The logging utility instance to use to log events from this class
+        /// </summary>
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(BlockIndex));
+        
+        [CanBeNull]
+        public static BlockIndex LoadFromFile([NotNull] string directory, [NotNull] string filename = "index.json")
+        {
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var indexPath = Path.Combine(directory, filename);
+            if (!File.Exists(indexPath))
+            {
+                Logger.Warn($"No index found at {indexPath}");
+                return null;
+            }
+
+            using (var sr = new StreamReader(indexPath, System.Text.Encoding.UTF8))
+            {
+                var indexString = sr.ReadToEnd();
+                return JsonConvert.DeserializeObject<BlockIndex>(indexString);
+            }
+        }
+
+        /// <summary>
         /// Saves the index to local storage
         /// </summary>
         /// <param name="directory">The directory path to which to save the block file</param>
         /// <param name="filename">The filename of the block file</param>
-        public void SaveToFile(string directory = null, [NotNull] string filename = "index.json")
+        public void SaveToFile([NotNull] string directory, [NotNull] string filename = "index.json")
         {
-            var dir = directory ?? Block.GetBlockDirectory();
-
-            if (!Directory.Exists(dir))
+            if (!Directory.Exists(directory))
             {
-                Directory.CreateDirectory(dir);
+                Directory.CreateDirectory(directory);
             }
 
             using (var fs = new FileStream(
-                Path.Combine(dir, filename),
+                Path.Combine(directory, filename),
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.None))
